@@ -78,13 +78,7 @@ class _ErrorCollector:
 
         Must be inside loops, as only one error can be collected at a time.
         """
-        error_classes = err_cls or (Exception,)
-        try:
-            yield
-        except ExceptionGroup as error:
-            self.errors.extend(error.exceptions)
-        except error_classes as error:
-            self.errors.append(error)
+        pass
 
     def error(
         self,

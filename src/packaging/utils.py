@@ -88,16 +88,7 @@ def canonicalize_name(name: str, *, validate: bool = False) -> NormalizedName:
     >>> canonicalize_name("requests")
     'requests'
     """
-    if validate and not _validate_regex.fullmatch(name):
-        raise InvalidName(f"name is invalid: {name!r}")
-    # Ensure all ``.`` and ``_`` are ``-``
-    # Emulates ``re.sub(r"[-_.]+", "-", name).lower()`` from PEP 503
-    # Much faster than re, and even faster than str.translate
-    value = name.lower().replace("_", "-").replace(".", "-")
-    # Condense repeats (faster than regex)
-    while "--" in value:
-        value = value.replace("--", "-")
-    return cast("NormalizedName", value)
+    pass
 
 
 def is_normalized_name(name: str) -> bool:
@@ -113,7 +104,7 @@ def is_normalized_name(name: str) -> bool:
     >>> is_normalized_name("Django")
     False
     """
-    return _normalized_regex.fullmatch(name) is not None
+    pass
 
 
 def canonicalize_version(
@@ -146,12 +137,7 @@ def canonicalize_version(
     >>> canonicalize_version('1.4.0.0.0')
     '1.4'
     """
-    if isinstance(version, str):
-        try:
-            version = Version(version)
-        except InvalidVersion:
-            return str(version)
-    return str(_TrimmedRelease(version) if strip_trailing_zero else version)
+    pass
 
 
 def parse_wheel_filename(
@@ -199,51 +185,7 @@ def parse_wheel_filename(
     .. versionadded:: 26.1
        The *validate_order* parameter.
     """
-    if not filename.endswith(".whl"):
-        raise InvalidWheelFilename(
-            f"Invalid wheel filename (extension must be '.whl'): {filename!r}"
-        )
-
-    filename = filename[:-4]
-    dashes = filename.count("-")
-    if dashes not in (4, 5):
-        raise InvalidWheelFilename(
-            f"Invalid wheel filename (wrong number of parts): {filename!r}"
-        )
-
-    parts = filename.split("-", dashes - 2)
-    name_part = parts[0]
-    # See PEP 427 for the rules on escaping the project name.
-    if "__" in name_part or re.match(r"^[\w\d._]*$", name_part, re.UNICODE) is None:
-        raise InvalidWheelFilename(f"Invalid project name: {filename!r}")
-    name = canonicalize_name(name_part)
-
-    try:
-        version = Version(parts[1])
-    except InvalidVersion as e:
-        raise InvalidWheelFilename(
-            f"Invalid wheel filename (invalid version): {filename!r}"
-        ) from e
-
-    if dashes == 5:
-        build_part = parts[2]
-        build_match = _build_tag_regex.match(build_part)
-        if build_match is None:
-            raise InvalidWheelFilename(
-                f"Invalid build number: {build_part} in {filename!r}"
-            )
-        build = cast("BuildTag", (int(build_match.group(1)), build_match.group(2)))
-    else:
-        build = ()
-    tag_str = parts[-1]
-    try:
-        tags = parse_tag(tag_str, validate_order=validate_order)
-    except UnsortedTagsError:
-        raise InvalidWheelFilename(
-            f"Invalid wheel filename (compressed tag set components must be in "
-            f"sorted order per PEP 425): {filename!r}"
-        ) from None
-    return (name, version, build, tags)
+    pass
 
 
 def parse_sdist_filename(filename: str) -> tuple[NormalizedName, Version]:
@@ -268,29 +210,4 @@ def parse_sdist_filename(filename: str) -> tuple[NormalizedName, Version]:
 
     .. _Source distribution format: https://packaging.python.org/specifications/source-distribution-format/#source-distribution-file-name
     """
-    if filename.endswith(".tar.gz"):
-        file_stem = filename[: -len(".tar.gz")]
-    elif filename.endswith(".zip"):
-        file_stem = filename[: -len(".zip")]
-    else:
-        raise InvalidSdistFilename(
-            f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):"
-            f" {filename!r}"
-        )
-
-    # We are requiring a PEP 440 version, which cannot contain dashes,
-    # so we split on the last dash.
-    name_part, sep, version_part = file_stem.rpartition("-")
-    if not sep:
-        raise InvalidSdistFilename(f"Invalid sdist filename: {filename!r}")
-
-    name = canonicalize_name(name_part)
-
-    try:
-        version = Version(version_part)
-    except InvalidVersion as e:
-        raise InvalidSdistFilename(
-            f"Invalid sdist filename (invalid version): {filename!r}"
-        ) from e
-
-    return (name, version)
+    pass

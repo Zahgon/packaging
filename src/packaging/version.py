@@ -37,15 +37,7 @@ else:  # pragma: no cover
     def _deprecated(message: str) -> object:
         def decorator(func: Callable[[...], object]) -> object:
             @functools.wraps(func)
-            def wrapper(*args: object, **kwargs: object) -> object:
-                warnings.warn(
-                    message,
-                    category=DeprecationWarning,
-                    stacklevel=2,
-                )
-                return func(*args, **kwargs)
-
-            return wrapper
+            pass
 
         return decorator
 
@@ -119,7 +111,7 @@ def parse(version: str) -> Version:
     :param version: The version string to parse.
     :raises InvalidVersion: When the version string is not a valid version.
     """
-    return Version(version)
+    pass
 
 
 class InvalidVersion(ValueError):
@@ -542,16 +534,7 @@ class Version(_BaseVersion):
 
     @property
     def _key(self) -> CmpKey:
-        if self._key_cache is None:
-            self._key_cache = _cmpkey(
-                self._epoch,
-                self._release,
-                self._pre,
-                self._post,
-                self._dev,
-                self._local,
-            )
-        return self._key_cache
+        pass
 
     # __hash__ must be defined when __eq__ is overridden,
     # otherwise Python sets __hash__ to None.
@@ -738,21 +721,12 @@ class Version(_BaseVersion):
     @property
     @_deprecated("Version._version is private and will be removed soon")
     def _version(self) -> _Version:
-        return _Version(
-            self._epoch, self._release, self._dev, self._pre, self._post, self._local
-        )
+        pass
 
     @_version.setter
     @_deprecated("Version._version is private and will be removed soon")
     def _version(self, value: _Version) -> None:
-        self._epoch = value.epoch
-        self._release = value.release
-        self._dev = value.dev
-        self._pre = value.pre
-        self._post = value.post
-        self._local = value.local
-        self._key_cache = None
-        self._hash_cache = None
+        pass
 
     def __repr__(self) -> str:
         """A representation of the Version that shows all internal state.
@@ -796,7 +770,7 @@ class Version(_BaseVersion):
     @property
     def _str(self) -> str:
         """Internal property for match_args"""
-        return str(self)
+        pass
 
     @property
     def epoch(self) -> int:
@@ -807,7 +781,7 @@ class Version(_BaseVersion):
         >>> Version("1!2.0.0").epoch
         1
         """
-        return self._epoch
+        pass
 
     @property
     def release(self) -> tuple[int, ...]:
@@ -823,7 +797,7 @@ class Version(_BaseVersion):
         Includes trailing zeroes but not the epoch or any pre-release / development /
         post-release suffixes.
         """
-        return self._release
+        pass
 
     @property
     def pre(self) -> tuple[Literal["a", "b", "rc"], int] | None:
@@ -838,7 +812,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3rc1").pre
         ('rc', 1)
         """
-        return self._pre
+        pass
 
     @property
     def post(self) -> int | None:
@@ -849,7 +823,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3.post1").post
         1
         """
-        return self._post[1] if self._post else None
+        pass
 
     @property
     def dev(self) -> int | None:
@@ -860,7 +834,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3.dev1").dev
         1
         """
-        return self._dev[1] if self._dev else None
+        pass
 
     @property
     def local(self) -> str | None:
@@ -871,10 +845,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3+abc").local
         'abc'
         """
-        if self._local:
-            return ".".join(str(x) for x in self._local)
-        else:
-            return None
+        pass
 
     @property
     def public(self) -> str:
@@ -890,7 +861,7 @@ class Version(_BaseVersion):
         >>> Version("1!1.2.3dev1+abc").public
         '1!1.2.3.dev1'
         """
-        return str(self).split("+", 1)[0]
+        pass
 
     @property
     def base_version(self) -> str:
@@ -910,8 +881,7 @@ class Version(_BaseVersion):
         The "base version" is the public version of the project without any pre or post
         release markers.
         """
-        release_segment = ".".join(map(str, self.release))
-        return f"{self.epoch}!{release_segment}" if self.epoch else release_segment
+        pass
 
     @property
     def is_prerelease(self) -> bool:
@@ -928,7 +898,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3dev1").is_prerelease
         True
         """
-        return self.dev is not None or self.pre is not None
+        pass
 
     @property
     def is_postrelease(self) -> bool:
@@ -939,7 +909,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3.post1").is_postrelease
         True
         """
-        return self.post is not None
+        pass
 
     @property
     def is_devrelease(self) -> bool:
@@ -950,7 +920,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3.dev1").is_devrelease
         True
         """
-        return self.dev is not None
+        pass
 
     @property
     def major(self) -> int:
@@ -959,7 +929,7 @@ class Version(_BaseVersion):
         >>> Version("1.2.3").major
         1
         """
-        return self.release[0] if len(self.release) >= 1 else 0
+        pass
 
     @property
     def minor(self) -> int:
@@ -970,7 +940,7 @@ class Version(_BaseVersion):
         >>> Version("1").minor
         0
         """
-        return self.release[1] if len(self.release) >= 2 else 0
+        pass
 
     @property
     def micro(self) -> int:
@@ -981,7 +951,7 @@ class Version(_BaseVersion):
         >>> Version("1").micro
         0
         """
-        return self.release[2] if len(self.release) >= 3 else 0
+        pass
 
 
 class _TrimmedRelease(Version):
@@ -1009,37 +979,13 @@ class _TrimmedRelease(Version):
         >>> _TrimmedRelease('0.0').release
         (0,)
         """
-        # This leaves one 0.
-        rel = super().release
-        len_release = len(rel)
-        i = len_release
-        while i > 1 and rel[i - 1] == 0:
-            i -= 1
-        return rel if i == len_release else rel[:i]
+        pass
 
 
 def _parse_letter_version(
     letter: str | None, number: str | bytes | SupportsInt | None
 ) -> tuple[str, int] | None:
-    if letter:
-        # We normalize any letters to their lower case form
-        letter = letter.lower()
-
-        # We consider some words to be alternate spellings of other words and
-        # in those cases we want to normalize the spellings to our preferred
-        # spelling.
-        letter = _LETTER_NORMALIZATION.get(letter, letter)
-
-        # We consider there to be an implicit 0 in a pre-release if there is
-        # not a numeral associated with it.
-        return letter, int(number or 0)
-
-    if number:
-        # We assume if we are given a number, but we are not given a letter
-        # then this is using the implicit post release syntax (e.g. 1.0-1)
-        return "post", int(number)
-
-    return None
+    pass
 
 
 _local_version_separators = re.compile(r"[\._-]")
@@ -1112,37 +1058,4 @@ def _cmpkey(
     >>> _cmpkey(0, (1,), None, None, None, ("ubuntu", 1))
     (0, (1,), (3, 0, 0, 0, 1, 0), ((-1, 'ubuntu'), (1, '')))
     """
-    # Strip trailing zeros: 1.0.0 compares equal to 1.
-    len_release = len(release)
-    i = len_release
-    while i and release[i - 1] == 0:
-        i -= 1
-    trimmed = release if i == len_release else release[:i]
-
-    # Fast path: stable release with no local segment.
-    if pre is None and post is None and dev is None and local is None:
-        return epoch, trimmed, _STABLE_SUFFIX
-
-    if pre is None and post is None and dev is not None:
-        # dev-only (e.g. 1.0.dev1) sorts before all pre-releases.
-        pre_rank, pre_n = _PRE_RANK_DEV_ONLY, 0
-    elif pre is None:
-        pre_rank, pre_n = _PRE_RANK_STABLE, 0
-    else:
-        pre_rank, pre_n = _PRE_RANK[pre[0]], pre[1]
-
-    post_rank = 0 if post is None else 1
-    post_n = 0 if post is None else post[1]
-
-    dev_rank = 1 if dev is None else 0
-    dev_n = 0 if dev is None else dev[1]
-
-    suffix = (pre_rank, pre_n, post_rank, post_n, dev_rank, dev_n)
-
-    if local is None:
-        return epoch, trimmed, suffix
-
-    cmp_local: CmpLocalType = tuple(
-        (seg, "") if isinstance(seg, int) else (_LOCAL_STR_RANK, seg) for seg in local
-    )
-    return epoch, trimmed, suffix, cmp_local
+    pass

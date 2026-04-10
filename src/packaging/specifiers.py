@@ -38,18 +38,11 @@ CallableOperator = Callable[[Version, str], bool]
 
 
 def _coerce_version(version: UnparsedVersion) -> Version | None:
-    if not isinstance(version, Version):
-        try:
-            version = Version(version)
-        except InvalidVersion:
-            return None
-    return version
+    pass
 
 
 def _public_version(version: Version) -> Version:
-    if version.local is None:
-        return version
-    return version.__replace__(local=None)
+    pass
 
 
 def _post_base(version: Version) -> Version:
@@ -57,7 +50,7 @@ def _post_base(version: Version) -> Version:
 
     1.0.post1 -> 1.0, 1.0a1.post0 -> 1.0a1, 1.0.post0.dev1 -> 1.0.
     """
-    return version.__replace__(post=None, dev=None, local=None)
+    pass
 
 
 def _earliest_prerelease(version: Version) -> Version:
@@ -65,7 +58,7 @@ def _earliest_prerelease(version: Version) -> Version:
 
     1.2 -> 1.2.dev0, 1.2.post1 -> 1.2.post1.dev0.
     """
-    return version.__replace__(dev=0, local=None)
+    pass
 
 
 class InvalidSpecifier(ValueError):
@@ -87,7 +80,7 @@ class BaseSpecifier(metaclass=abc.ABCMeta):
     @property
     def _str(self) -> str:
         """Internal property for match_args"""
-        return str(self)
+        pass
 
     @abc.abstractmethod
     def __str__(self) -> str:
@@ -318,15 +311,7 @@ class Specifier(BaseSpecifier):
 
     def _get_spec_version(self, version: str) -> Version | None:
         """One element cache, as only one spec Version is needed per Specifier."""
-        if self._spec_version is not None and self._spec_version[0] == version:
-            return self._spec_version[1]
-
-        version_specifier = _coerce_version(version)
-        if version_specifier is None:
-            return None
-
-        self._spec_version = (version, version_specifier)
-        return version_specifier
+        pass
 
     def _require_spec_version(self, version: str) -> Version:
         """Get spec version, asserting it's valid (not for === operator).
@@ -334,41 +319,17 @@ class Specifier(BaseSpecifier):
         This method should only be called for operators where version
         strings are guaranteed to be valid PEP 440 versions (not ===).
         """
-        spec_version = self._get_spec_version(version)
-        assert spec_version is not None
-        return spec_version
+        pass
 
     @property
     def prereleases(self) -> bool | None:
         # If there is an explicit prereleases set for this, then we'll just
         # blindly use that.
-        if self._prereleases is not None:
-            return self._prereleases
-
-        # Only the "!=" operator does not imply prereleases when
-        # the version in the specifier is a prerelease.
-        operator, version_str = self._spec
-        if operator == "!=":
-            return False
-
-        # The == specifier with trailing .* cannot include prereleases
-        # e.g. "==1.0a1.*" is not valid.
-        if operator == "==" and version_str.endswith(".*"):
-            return False
-
-        # "===" can have arbitrary string versions, so we cannot parse
-        # those, we take prereleases as unknown (None) for those.
-        version = self._get_spec_version(version_str)
-        if version is None:
-            return None
-
-        # For all other operators, use the check if spec Version
-        # object implies pre-releases.
-        return version.is_prerelease
+        pass
 
     @prereleases.setter
     def prereleases(self, value: bool | None) -> None:
-        self._prereleases = value
+        pass
 
     @property
     def operator(self) -> str:
@@ -377,7 +338,7 @@ class Specifier(BaseSpecifier):
         >>> Specifier("==1.2.3").operator
         '=='
         """
-        return self._spec[0]
+        pass
 
     @property
     def version(self) -> str:
@@ -386,7 +347,7 @@ class Specifier(BaseSpecifier):
         >>> Specifier("==1.2.3").version
         '1.2.3'
         """
-        return self._spec[1]
+        pass
 
     def __repr__(self) -> str:
         """A representation of the Specifier that shows all internal state.
@@ -418,17 +379,7 @@ class Specifier(BaseSpecifier):
 
     @property
     def _canonical_spec(self) -> tuple[str, str]:
-        operator, version = self._spec
-        if operator == "===" or version.endswith(".*"):
-            return operator, version
-
-        spec_version = self._require_spec_version(version)
-
-        canonical_version = canonicalize_version(
-            spec_version, strip_trailing_zero=(operator != "~=")
-        )
-
-        return operator, canonical_version
+        pass
 
     def __hash__(self) -> int:
         return hash(self._canonical_spec)
@@ -463,10 +414,7 @@ class Specifier(BaseSpecifier):
         return self._canonical_spec == other._canonical_spec
 
     def _get_operator(self, op: str) -> CallableOperator:
-        operator_callable: CallableOperator = getattr(
-            self, f"_compare_{self._operators[op]}"
-        )
-        return operator_callable
+        pass
 
     def _compare_compatible(self, prospective: Version, spec: str) -> bool:
         # Compatible releases have an equivalent combination of >= and ==. That
@@ -477,16 +425,7 @@ class Specifier(BaseSpecifier):
 
         # We want everything but the last item in the version, but we want to
         # ignore suffix segments.
-        prefix = _version_join(
-            list(itertools.takewhile(_is_not_suffix, _version_split(spec)))[:-1]
-        )
-
-        # Add the prefix notation to the end of our string
-        prefix += ".*"
-
-        return (self._compare_greater_than_equal(prospective, spec)) and (
-            self._compare_equal(prospective, prefix)
-        )
+        pass
 
     def _get_wildcard_split(self, spec: str) -> tuple[list[str], int]:
         """Cached split of a wildcard spec into components and numeric length.
@@ -496,124 +435,39 @@ class Specifier(BaseSpecifier):
         >>> Specifier("==3.10.*")._get_wildcard_split("3.10.*")
         (['0', '3', '10'], 3)
         """
-        wildcard_split = self._wildcard_split
-        if wildcard_split is None:
-            normalized = canonicalize_version(spec[:-2], strip_trailing_zero=False)
-            split_spec = _version_split(normalized)
-            wildcard_split = (split_spec, _numeric_prefix_len(split_spec))
-            self._wildcard_split = wildcard_split
-        return wildcard_split
+        pass
 
     def _compare_equal(self, prospective: Version, spec: str) -> bool:
         # We need special logic to handle prefix matching
-        if spec.endswith(".*"):
-            split_spec, spec_numeric_len = self._get_wildcard_split(spec)
-
-            # In the case of prefix matching we want to ignore local segment.
-            normalized_prospective = canonicalize_version(
-                _public_version(prospective), strip_trailing_zero=False
-            )
-            # Split the prospective version out by bangs and dots, and pretend
-            # that there is an implicit dot in between a release segment and
-            # a pre-release segment.
-            split_prospective = _version_split(normalized_prospective)
-
-            # 0-pad the prospective version before shortening it to get the correct
-            # shortened version.
-            padded_prospective = _left_pad(split_prospective, spec_numeric_len)
-
-            # Shorten the prospective version to be the same length as the spec
-            # so that we can determine if the specifier is a prefix of the
-            # prospective version or not.
-            shortened_prospective = padded_prospective[: len(split_spec)]
-
-            return shortened_prospective == split_spec
-        else:
-            # Convert our spec string into a Version
-            spec_version = self._require_spec_version(spec)
-
-            # If the specifier does not have a local segment, then we want to
-            # act as if the prospective version also does not have a local
-            # segment.
-            if not spec_version.local:
-                prospective = _public_version(prospective)
-
-            return prospective == spec_version
+        pass
 
     def _compare_not_equal(self, prospective: Version, spec: str) -> bool:
-        return not self._compare_equal(prospective, spec)
+        pass
 
     def _compare_less_than_equal(self, prospective: Version, spec: str) -> bool:
         # NB: Local version identifiers are NOT permitted in the version
         # specifier, so local version labels can be universally removed from
         # the prospective version.
-        return _public_version(prospective) <= self._require_spec_version(spec)
+        pass
 
     def _compare_greater_than_equal(self, prospective: Version, spec: str) -> bool:
         # NB: Local version identifiers are NOT permitted in the version
         # specifier, so local version labels can be universally removed from
         # the prospective version.
-        return _public_version(prospective) >= self._require_spec_version(spec)
+        pass
 
     def _compare_less_than(self, prospective: Version, spec_str: str) -> bool:
         # Convert our spec to a Version instance, since we'll want to work with
         # it as a version.
-        spec = self._require_spec_version(spec_str)
-
-        # Check to see if the prospective version is less than the spec
-        # version. If it's not we can short circuit and just return False now
-        # instead of doing extra unneeded work.
-        if not prospective < spec:
-            return False
-
-        # The spec says: "<V MUST NOT allow a pre-release of the specified
-        # version unless the specified version is itself a pre-release."
-        if (
-            not spec.is_prerelease
-            and prospective.is_prerelease
-            and prospective >= _earliest_prerelease(spec)
-        ):
-            return False
-
-        # If we've gotten to here, it means that prospective version is both
-        # less than the spec version *and* it's not a pre-release of the same
-        # version in the spec.
-        return True
+        pass
 
     def _compare_greater_than(self, prospective: Version, spec_str: str) -> bool:
         # Convert our spec to a Version instance, since we'll want to work with
         # it as a version.
-        spec = self._require_spec_version(spec_str)
-
-        # Check to see if the prospective version is greater than the spec
-        # version. If it's not we can short circuit and just return False now
-        # instead of doing extra unneeded work.
-        if not prospective > spec:
-            return False
-
-        # The spec says: ">V MUST NOT allow a post-release of the specified
-        # version unless the specified version is itself a post-release."
-        if (
-            not spec.is_postrelease
-            and prospective.is_postrelease
-            and _post_base(prospective) == spec
-        ):
-            return False
-
-        # Per the spec: ">V MUST NOT match a local version of the specified
-        # version". A "local version of V" is any version whose public part
-        # equals V. So >1.0a1 must not match 1.0a1+local, but must still
-        # match 1.0a2+local.
-        if prospective.local is not None and _public_version(prospective) == spec:
-            return False
-
-        # If we've gotten to here, it means that prospective version is both
-        # greater than the spec version *and* it's not a pre-release of the
-        # same version in the spec.
-        return True
+        pass
 
     def _compare_arbitrary(self, prospective: Version | str, spec: str) -> bool:
-        return str(prospective).lower() == str(spec).lower()
+        pass
 
     def __contains__(self, item: str | Version) -> bool:
         """Return whether or not the item is contained in this specifier.
@@ -660,8 +514,7 @@ class Specifier(BaseSpecifier):
         >>> Specifier(">=1.2.3").contains("1.3.0a1")
         True
         """
-
-        return bool(list(self.filter([item], prereleases=prereleases)))
+        pass
 
     @typing.overload
     def filter(
@@ -714,51 +567,7 @@ class Specifier(BaseSpecifier):
         ... key=lambda x: x["ver"]))
         [{'ver': '1.3'}]
         """
-        prereleases_versions = []
-        found_non_prereleases = False
-
-        # Determine if to include prereleases by default
-        include_prereleases = (
-            prereleases if prereleases is not None else self.prereleases
-        )
-
-        # Get the matching operator
-        operator_callable = self._get_operator(self.operator)
-
-        # Filter versions
-        for version in iterable:
-            parsed_version = _coerce_version(version if key is None else key(version))
-            match = False
-            if parsed_version is None:
-                # === operator can match arbitrary (non-version) strings
-                if self.operator == "===" and self._compare_arbitrary(
-                    version, self.version
-                ):
-                    yield version
-            elif self.operator == "===":
-                match = self._compare_arbitrary(
-                    version if key is None else key(version), self.version
-                )
-            else:
-                match = operator_callable(parsed_version, self.version)
-
-            if match and parsed_version is not None:
-                # If it's not a prerelease or prereleases are allowed, yield it directly
-                if not parsed_version.is_prerelease or include_prereleases:
-                    found_non_prereleases = True
-                    yield version
-                # Otherwise collect prereleases for potential later use
-                elif prereleases is None and self._prereleases is not False:
-                    prereleases_versions.append(version)
-
-        # If no non-prereleases were found and prereleases weren't
-        # explicitly forbidden, yield the collected prereleases
-        if (
-            not found_non_prereleases
-            and prereleases is None
-            and self._prereleases is not False
-        ):
-            yield from prereleases_versions
+        pass
 
 
 _prefix_regex = re.compile(r"([0-9]+)((?:a|b|c|rc)[0-9]+)")
@@ -768,42 +577,7 @@ def _pep440_filter_prereleases(
     iterable: Iterable[Any], key: Callable[[Any], UnparsedVersion] | None
 ) -> Iterator[Any]:
     """Filter per PEP 440: exclude prereleases unless no finals exist."""
-    # Two lists used:
-    #   * all_nonfinal to preserve order if no finals exist
-    #   * arbitrary_strings for streaming when first final found
-    all_nonfinal: list[Any] = []
-    arbitrary_strings: list[Any] = []
-
-    found_final = False
-    for item in iterable:
-        parsed = _coerce_version(item if key is None else key(item))
-
-        if parsed is None:
-            # Arbitrary strings are always included as it is not
-            # possible to determine if they are prereleases,
-            # and they have already passed all specifiers.
-            if found_final:
-                yield item
-            else:
-                arbitrary_strings.append(item)
-                all_nonfinal.append(item)
-            continue
-
-        if not parsed.is_prerelease:
-            # Final release found - flush arbitrary strings, then yield
-            if not found_final:
-                yield from arbitrary_strings
-                found_final = True
-            yield item
-            continue
-
-        # Prerelease - buffer if no finals yet, otherwise skip
-        if not found_final:
-            all_nonfinal.append(item)
-
-    # No finals found - yield all buffered items
-    if not found_final:
-        yield from all_nonfinal
+    pass
 
 
 def _version_split(version: str) -> list[str]:
@@ -814,18 +588,7 @@ def _version_split(version: str) -> list[str]:
     components back with :func:`_version_join` may not produce the original
     version string.
     """
-    result: list[str] = []
-
-    epoch, _, rest = version.rpartition("!")
-    result.append(epoch or "0")
-
-    for item in rest.split("."):
-        match = _prefix_regex.fullmatch(item)
-        if match:
-            result.extend(match.groups())
-        else:
-            result.append(item)
-    return result
+    pass
 
 
 def _version_join(components: list[str]) -> str:
@@ -835,14 +598,11 @@ def _version_join(components: list[str]) -> str:
     first component must be the epoch (either empty or numeric), and all other
     components numeric.
     """
-    epoch, *rest = components
-    return f"{epoch}!{'.'.join(rest)}"
+    pass
 
 
 def _is_not_suffix(segment: str) -> bool:
-    return not any(
-        segment.startswith(prefix) for prefix in ("dev", "a", "b", "rc", "post")
-    )
+    pass
 
 
 def _numeric_prefix_len(split: list[str]) -> int:
@@ -851,12 +611,7 @@ def _numeric_prefix_len(split: list[str]) -> int:
     >>> _numeric_prefix_len(["0", "1", "2", "a1"])
     3
     """
-    count = 0
-    for segment in split:
-        if not segment.isdigit():
-            break
-        count += 1
-    return count
+    pass
 
 
 def _left_pad(split: list[str], target_numeric_len: int) -> list[str]:
@@ -866,11 +621,7 @@ def _left_pad(split: list[str], target_numeric_len: int) -> list[str]:
     >>> _left_pad(["0", "1", "a1"], 4)
     ['0', '1', '0', '0', 'a1']
     """
-    numeric_len = _numeric_prefix_len(split)
-    pad_needed = target_numeric_len - numeric_len
-    if pad_needed <= 0:
-        return split
-    return [*split[:numeric_len], *(["0"] * pad_needed), *split[numeric_len:]]
+    pass
 
 
 def _operator_cost(op_entry: tuple[CallableOperator, str, str]) -> int:
@@ -885,19 +636,7 @@ def _operator_cost(op_entry: tuple[CallableOperator, str, str]) -> int:
     Tier 3: Exact !=, cheap but rarely rejects
     Tier 4: Wildcard !=.*, expensive and rarely rejects
     """
-    _, ver, op = op_entry
-    if op == "==":
-        return 0 if not ver.endswith(".*") else 2
-    if op in (">=", "<=", ">", "<"):
-        return 1
-    if op == "~=":
-        return 2
-    if op == "!=":
-        return 3 if not ver.endswith(".*") else 4
-    if op == "===":
-        return 0
-
-    raise ValueError(f"Unknown operator: {op!r}")  # pragma: no cover
+    pass
 
 
 class SpecifierSet(BaseSpecifier):
@@ -960,35 +699,17 @@ class SpecifierSet(BaseSpecifier):
 
     def _canonical_specs(self) -> tuple[Specifier, ...]:
         """Deduplicate, sort, and cache specs for order-sensitive operations."""
-        if not self._canonicalized:
-            self._specs = tuple(dict.fromkeys(sorted(self._specs, key=str)))
-            self._canonicalized = True
-            self._resolved_ops = None
-        return self._specs
+        pass
 
     @property
     def prereleases(self) -> bool | None:
         # If we have been given an explicit prerelease modifier, then we'll
         # pass that through here.
-        if self._prereleases is not None:
-            return self._prereleases
-
-        # If we don't have any specifiers, and we don't have a forced value,
-        # then we'll just return None since we don't know if this should have
-        # pre-releases or not.
-        if not self._specs:
-            return None
-
-        # Otherwise we'll see if any of the given specifiers accept
-        # prereleases, if any of them do we'll return True, otherwise False.
-        if any(s.prereleases for s in self._specs):
-            return True
-
-        return None
+        pass
 
     @prereleases.setter
     def prereleases(self, value: bool | None) -> None:
-        self._prereleases = value
+        pass
 
     def __repr__(self) -> str:
         """A representation of the specifier set that shows all internal state.
@@ -1153,18 +874,7 @@ class SpecifierSet(BaseSpecifier):
         >>> SpecifierSet(">=1.0.0,!=1.0.1").contains("1.3.0a1", prereleases=True)
         True
         """
-        version = _coerce_version(item)
-
-        if version is not None and installed and version.is_prerelease:
-            prereleases = True
-
-        # When item is a string and === is involved, keep it as-is
-        # so the comparison isn't done against the normalized form.
-        if version is None or (self._has_arbitrary and not isinstance(item, Version)):
-            check_item = item
-        else:
-            check_item = version
-        return bool(list(self.filter([check_item], prereleases=prereleases)))
+        pass
 
     @typing.overload
     def filter(
@@ -1229,54 +939,7 @@ class SpecifierSet(BaseSpecifier):
         >>> list(SpecifierSet("").filter(["1.3", "1.5a1"], prereleases=True))
         ['1.3', '1.5a1']
         """
-        # Determine if we're forcing a prerelease or not, if we're not forcing
-        # one for this particular filter call, then we'll use whatever the
-        # SpecifierSet thinks for whether or not we should support prereleases.
-        if prereleases is None and self.prereleases is not None:
-            prereleases = self.prereleases
-
-        # Filter versions that match all specifiers using Cost Based Ordering.
-        if self._specs:
-            # When prereleases is None, we need to let all versions through
-            # the individual filters, then decide about prereleases at the end
-            # based on whether any non-prereleases matched ALL specs.
-
-            # Fast path: single specifier, delegate directly.
-            if len(self._specs) == 1:
-                filtered = self._specs[0].filter(
-                    iterable,
-                    prereleases=True if prereleases is None else prereleases,
-                    key=key,
-                )
-            else:
-                filtered = self._filter_versions(
-                    iterable,
-                    key,
-                    prereleases=True if prereleases is None else prereleases,
-                )
-
-            if prereleases is not None:
-                return filtered
-
-            return _pep440_filter_prereleases(filtered, key)
-
-        # Handle Empty SpecifierSet.
-        if prereleases is True:
-            return iter(iterable)
-
-        if prereleases is False:
-            return (
-                item
-                for item in iterable
-                if (
-                    (version := _coerce_version(item if key is None else key(item)))
-                    is None
-                    or not version.is_prerelease
-                )
-            )
-
-        # PEP 440: exclude prereleases unless no final releases matched
-        return _pep440_filter_prereleases(iterable, key)
+        pass
 
     def _filter_versions(
         self,
@@ -1291,35 +954,4 @@ class SpecifierSet(BaseSpecifier):
         wildcard or compatible operators on versions that would have been
         rejected anyway.
         """
-        # Pre-resolve operators and sort (cached after first call).
-        if self._resolved_ops is None:
-            self._resolved_ops = sorted(
-                (
-                    (spec._get_operator(spec.operator), spec.version, spec.operator)
-                    for spec in self._specs
-                ),
-                key=_operator_cost,
-            )
-        ops = self._resolved_ops
-        exclude_prereleases = prereleases is False
-
-        for item in iterable:
-            parsed = _coerce_version(item if key is None else key(item))
-
-            if parsed is None:
-                # Only === can match non-parseable versions.
-                if all(
-                    op == "===" and str(item).lower() == ver.lower()
-                    for _, ver, op in ops
-                ):
-                    yield item
-            elif exclude_prereleases and parsed.is_prerelease:
-                pass
-            elif all(
-                str(item if key is None else key(item)).lower() == ver.lower()
-                if op == "==="
-                else op_fn(parsed, ver)
-                for op_fn, ver, op in ops
-            ):
-                # Short-circuits on the first failing operator.
-                yield item
+        pass

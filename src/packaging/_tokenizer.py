@@ -108,8 +108,7 @@ class Tokenizer:
 
     def consume(self, name: str) -> None:
         """Move beyond provided token name, if at current position."""
-        if self.check(name):
-            self.read()
+        pass
 
     def check(self, name: str, *, peek: bool = False) -> bool:
         """Check whether the next token has the provided name.
@@ -118,38 +117,18 @@ class Tokenizer:
         another check. If `peek` is set to `True`, the token is not loaded and
         would need to be checked again.
         """
-        assert self.next_token is None, (
-            f"Cannot check for {name!r}, already have {self.next_token!r}"
-        )
-        assert name in self.rules, f"Unknown token name: {name!r}"
-
-        expression = self.rules[name]
-
-        match = expression.match(self.source, self.position)
-        if match is None:
-            return False
-        if not peek:
-            self.next_token = Token(name, match[0], self.position)
-        return True
+        pass
 
     def expect(self, name: str, *, expected: str) -> Token:
         """Expect a certain token name next, failing with a syntax error otherwise.
 
         The token is *not* read.
         """
-        if not self.check(name):
-            raise self.raise_syntax_error(f"Expected {expected}")
-        return self.read()
+        pass
 
     def read(self) -> Token:
         """Consume the next token and return it."""
-        token = self.next_token
-        assert token is not None
-
-        self.position += len(token.text)
-        self.next_token = None
-
-        return token
+        pass
 
     def raise_syntax_error(
         self,
@@ -159,35 +138,10 @@ class Tokenizer:
         span_end: int | None = None,
     ) -> NoReturn:
         """Raise ParserSyntaxError at the given position."""
-        span = (
-            self.position if span_start is None else span_start,
-            self.position if span_end is None else span_end,
-        )
-        raise ParserSyntaxError(
-            message,
-            source=self.source,
-            span=span,
-        )
+        pass
 
     @contextlib.contextmanager
     def enclosing_tokens(
         self, open_token: str, close_token: str, *, around: str
     ) -> Generator[None, None, None]:
-        if self.check(open_token):
-            open_position = self.position
-            self.read()
-        else:
-            open_position = None
-
-        yield
-
-        if open_position is None:
-            return
-
-        if not self.check(close_token):
-            self.raise_syntax_error(
-                f"Expected matching {close_token} for {open_token}, after {around}",
-                span_start=open_position,
-            )
-
-        self.read()
+        pass

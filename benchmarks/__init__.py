@@ -10,8 +10,6 @@ F = TypeVar("F", bound="Callable[..., Any]")
 
 def add_attributes(**attrs: object) -> Callable[[F], F]:
     def decorator(func: F) -> F:
-        for name, value in attrs.items():
-            setattr(func, name, value)
-        return func
+        pass
 
     return decorator

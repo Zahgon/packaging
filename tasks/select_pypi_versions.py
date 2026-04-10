@@ -28,22 +28,7 @@ from packaging.version import InvalidVersion, Version
 
 
 def classify(v: str) -> str:
-    try:
-        ver = Version(v)
-    except InvalidVersion:
-        return "invalid"
-
-    if ver.epoch != 0:
-        return "epoch"
-    if ver.local is not None:
-        return "local"
-    if ver.pre is not None:
-        return "pre"
-    if ver.post is not None:
-        return "post"
-    if ver.dev is not None:
-        return "dev"
-    return "release"
+    pass
 
 
 with sqlite3.connect("pypi-data.sqlite") as conn:

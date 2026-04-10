@@ -12,11 +12,7 @@ from packaging.specifiers import InvalidSpecifier, SpecifierSet
 
 
 def valid_spec(v: str) -> bool:
-    try:
-        SpecifierSet(v)
-    except InvalidSpecifier:
-        return False
-    return True
+    pass
 
 
 with sqlite3.connect("pypi-data.sqlite") as conn:

@@ -64,12 +64,7 @@ def platform_tags(archs: Sequence[str]) -> Iterator[str]:
 
     :returns: An iterator of compatible musllinux tags.
     """
-    sys_musl = _get_musl_version(sys.executable)
-    if sys_musl is None:  # Python not dynamically linked against musl.
-        return
-    for arch in archs:
-        for minor in range(sys_musl.minor, -1, -1):
-            yield f"musllinux_{sys_musl.major}_{minor}_{arch}"
+    pass
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -29,5 +29,4 @@ class TimeUtils:
 
     @add_attributes(pretty_name="canonicalize_name")
     def time_canonicalize_name(self) -> None:
-        for v in NAMES:
-            canonicalize_name(v)
+        pass

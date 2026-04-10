@@ -13,11 +13,7 @@ from packaging.requirements import InvalidRequirement, Requirement
 
 
 def valid_requirement(req: str) -> bool:
-    try:
-        Requirement(req)
-    except InvalidRequirement:
-        return False
-    return True
+    pass
 
 
 with sqlite3.connect("pypi-data.sqlite") as conn:

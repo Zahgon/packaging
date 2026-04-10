@@ -119,12 +119,7 @@ class DependencyGroupResolver:
 
         :param group: the name of the group to lookup
         """
-        group = _normalize_name(group)
-
-        with _ErrorCollector().on_exit(
-            f"[dependency-groups] data for {group!r} was malformed"
-        ) as errors:
-            return self._parse_group(group, errors)
+        pass
 
     def resolve(self, group: str) -> tuple[Requirement, ...]:
         """
@@ -262,8 +257,7 @@ def resolve_dependency_groups(
         from ``pyproject.toml``
     :param groups: the name of the group(s) to resolve
     """
-    resolver = DependencyGroupResolver(dependency_groups)
-    return tuple(str(r) for group in groups for r in resolver.resolve(group))
+    pass
 
 
 # ----------------
@@ -282,21 +276,4 @@ def _normalize_group_names(
     dependency_groups: Mapping[str, Sequence[str | Mapping[str, str]]],
     errors: _ErrorCollector,
 ) -> dict[str, Sequence[str | Mapping[str, str]]]:
-    original_names: dict[str, list[str]] = {}
-    normalized_groups: dict[str, Sequence[str | Mapping[str, str]]] = {}
-
-    for group_name, value in dependency_groups.items():
-        normed_group_name = _normalize_name(group_name)
-        original_names.setdefault(normed_group_name, []).append(group_name)
-        normalized_groups[normed_group_name] = value
-
-    for normed_name, names in original_names.items():
-        if len(names) > 1:
-            errors.error(
-                DuplicateGroupNames(
-                    "Duplicate dependency group names: "
-                    f"{normed_name} ({', '.join(names)})"
-                )
-            )
-
-    return normalized_groups
+    pass

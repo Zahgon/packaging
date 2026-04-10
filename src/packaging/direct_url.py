@@ -40,39 +40,24 @@ _FromMappingProtocolT = TypeVar("_FromMappingProtocolT", bound=_FromMappingProto
 
 
 def _json_dict_factory(data: list[tuple[str, Any]]) -> dict[str, Any]:
-    return {key: value for key, value in data if value is not None}
+    pass
 
 
 def _get(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T | None:
     """Get a value from the dictionary and verify it's the expected type."""
-    if (value := d.get(key)) is None:
-        return None
-    if not isinstance(value, expected_type):
-        raise DirectUrlValidationError(
-            f"Unexpected type {type(value).__name__} "
-            f"(expected {expected_type.__name__})",
-            context=key,
-        )
-    return value
+    pass
 
 
 def _get_required(d: Mapping[str, Any], expected_type: type[_T], key: str) -> _T:
     """Get a required value from the dictionary and verify it's the expected type."""
-    if (value := _get(d, expected_type, key)) is None:
-        raise _DirectUrlRequiredKeyError(key)
-    return value
+    pass
 
 
 def _get_object(
     d: Mapping[str, Any], target_type: type[_FromMappingProtocolT], key: str
 ) -> _FromMappingProtocolT | None:
     """Get a dictionary value from the dictionary and convert it to a dataclass."""
-    if (value := _get(d, Mapping, key)) is None:  # type: ignore[type-abstract]
-        return None
-    try:
-        return target_type._from_dict(value)
-    except Exception as e:
-        raise DirectUrlValidationError(e, context=key) from e
+    pass
 
 
 _PEP610_USER_PASS_ENV_VARS_REGEX = re.compile(
@@ -81,14 +66,7 @@ _PEP610_USER_PASS_ENV_VARS_REGEX = re.compile(
 
 
 def _strip_auth_from_netloc(netloc: str, safe_user_passwords: Collection[str]) -> str:
-    if "@" not in netloc:
-        return netloc
-    user_pass, netloc_no_user_pass = netloc.split("@", 1)
-    if user_pass in safe_user_passwords:
-        return netloc
-    if _PEP610_USER_PASS_ENV_VARS_REGEX.match(user_pass):
-        return netloc
-    return netloc_no_user_pass
+    pass
 
 
 def _strip_url(url: str, safe_user_passwords: Collection[str]) -> str:
@@ -96,17 +74,7 @@ def _strip_url(url: str, safe_user_passwords: Collection[str]) -> str:
     environment variables as specified in PEP 610, or it is a safe user:password
     such as `git`.
     """
-    parsed_url = urllib.parse.urlsplit(url)
-    netloc = _strip_auth_from_netloc(parsed_url.netloc, safe_user_passwords)
-    return urllib.parse.urlunsplit(
-        (
-            parsed_url.scheme,
-            netloc,
-            parsed_url.path,
-            parsed_url.query,
-            parsed_url.fragment,
-        )
-    )
+    pass
 
 
 class DirectUrlValidationError(Exception):
@@ -164,11 +132,7 @@ class VcsInfo:
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> Self:
         # We can't validate vcs value because is not closed.
-        return cls(
-            vcs=_get_required(d, str, "vcs"),
-            requested_revision=_get(d, str, "requested_revision"),
-            commit_id=_get_required(d, str, "commit_id"),
-        )
+        pass
 
 
 @dataclasses.dataclass(frozen=True, init=False)
@@ -184,37 +148,7 @@ class ArchiveInfo:
 
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> Self:
-        hashes = _get(d, Mapping, "hashes")  # type: ignore[type-abstract]
-        if hashes is not None and not all(isinstance(h, str) for h in hashes.values()):
-            raise DirectUrlValidationError(
-                "Hash values must be strings", context="hashes"
-            )
-        legacy_hash = _get(d, str, "hash")
-        if legacy_hash is not None:
-            if "=" not in legacy_hash:
-                raise DirectUrlValidationError(
-                    "Invalid hash format (expected '<algorithm>=<hash>')",
-                    context="hash",
-                )
-            hash_algorithm, hash_value = legacy_hash.split("=", 1)
-            if hashes is None:
-                # if `hashes` are not present, we can derive it from the legacy `hash`
-                hashes = {hash_algorithm: hash_value}
-            else:
-                # if `hashes` are present, the legacy `hash` must match one of them
-                if hash_algorithm not in hashes:
-                    raise DirectUrlValidationError(
-                        f"Algorithm {hash_algorithm!r} used in hash field "
-                        f"is not present in hashes field",
-                        context="hashes",
-                    )
-                if hashes[hash_algorithm] != hash_value:
-                    raise DirectUrlValidationError(
-                        f"Algorithm {hash_algorithm!r} used in hash field "
-                        f"has different value in hashes field",
-                        context="hash",
-                    )
-        return cls(hashes=hashes)
+        pass
 
 
 @dataclasses.dataclass(frozen=True, init=False)
@@ -230,9 +164,7 @@ class DirInfo:
 
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> Self:
-        return cls(
-            editable=_get(d, bool, "editable"),
-        )
+        pass
 
 
 @dataclasses.dataclass(frozen=True, init=False)
@@ -262,33 +194,12 @@ class DirectUrl:
 
     @classmethod
     def _from_dict(cls, d: Mapping[str, Any]) -> Self:
-        direct_url = cls(
-            url=_get_required(d, str, "url"),
-            archive_info=_get_object(d, ArchiveInfo, "archive_info"),
-            vcs_info=_get_object(d, VcsInfo, "vcs_info"),
-            dir_info=_get_object(d, DirInfo, "dir_info"),
-            subdirectory=_get(d, str, "subdirectory"),
-        )
-        if (
-            bool(direct_url.vcs_info)
-            + bool(direct_url.archive_info)
-            + bool(direct_url.dir_info)
-        ) != 1:
-            raise DirectUrlValidationError(
-                "Exactly one of vcs_info, archive_info, dir_info must be present"
-            )
-        if direct_url.dir_info is not None and not direct_url.url.startswith("file://"):
-            raise DirectUrlValidationError(
-                "URL scheme must be file:// when dir_info is present",
-                context="url",
-            )
-        # XXX subdirectory must be relative, can we, should we validate that here?
-        return direct_url
+        pass
 
     @classmethod
     def from_dict(cls, d: Mapping[str, Any], /) -> Self:
         """Create and validate a DirectUrl instance from a JSON dictionary."""
-        return cls._from_dict(d)
+        pass
 
     def to_dict(
         self,
@@ -309,17 +220,11 @@ class DirectUrl:
             should not be stripped from the URL even if `strip_user_password` is
             True.
         """
-        res = dataclasses.asdict(self, dict_factory=_json_dict_factory)
-        if generate_legacy_hash and self.archive_info and self.archive_info.hashes:
-            hash_algorithm, hash_value = next(iter(self.archive_info.hashes.items()))
-            res["archive_info"]["hash"] = f"{hash_algorithm}={hash_value}"
-        if strip_user_password:
-            res["url"] = _strip_url(self.url, safe_user_passwords)
-        return res
+        pass
 
     def validate(self) -> None:
         """Validate the DirectUrl instance against the specification.
 
         Raises :class:`DirectUrlValidationError` if invalid.
         """
-        self.from_dict(self.to_dict())
+        pass
